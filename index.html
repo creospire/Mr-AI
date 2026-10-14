@@ -1,0 +1,459 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mr AI</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        background: #0b0f14;
+        color: white;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .app {
+        width: 100%;
+        max-width: 700px;
+        height: 95vh;
+        background: #111820;
+        border: 1px solid #26313d;
+        border-radius: 18px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .header {
+        padding: 18px;
+        background: #151d26;
+        border-bottom: 1px solid #26313d;
+        text-align: center;
+    }
+
+    .header h1 {
+        font-size: 22px;
+    }
+
+    .header p {
+        margin-top: 5px;
+        color: #8996a5;
+        font-size: 13px;
+    }
+
+    .chat {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+    }
+
+    .message {
+        display: flex;
+        margin-bottom: 15px;
+    }
+
+    .message.user {
+        justify-content: flex-end;
+    }
+
+    .bubble {
+        max-width: 80%;
+        padding: 12px 15px;
+        border-radius: 15px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+    }
+
+    .bot .bubble {
+        background: #1b2632;
+        border-bottom-left-radius: 4px;
+    }
+
+    .user .bubble {
+        background: #2563eb;
+        border-bottom-right-radius: 4px;
+    }
+
+    .input-area {
+        padding: 15px;
+        border-top: 1px solid #26313d;
+        display: flex;
+        gap: 10px;
+        background: #151d26;
+    }
+
+    #userInput {
+        flex: 1;
+        background: #0d141c;
+        color: white;
+        border: 1px solid #303c49;
+        border-radius: 12px;
+        padding: 13px;
+        outline: none;
+        font-size: 15px;
+    }
+
+    #userInput:focus {
+        border-color: #4d8dff;
+    }
+
+    #sendBtn {
+        border: none;
+        background: #2563eb;
+        color: white;
+        padding: 0 20px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 15px;
+    }
+
+    #sendBtn:hover {
+        background: #1d4ed8;
+    }
+
+    .typing {
+        color: #8996a5;
+        font-size: 13px;
+        margin-bottom: 12px;
+        display: none;
+    }
+
+    @media (max-width: 600px) {
+        .app {
+            height: 100vh;
+            border-radius: 0;
+        }
+
+        .bubble {
+            max-width: 88%;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <div class="header">
+        <h1>🤖 Mr AI</h1>
+        <p>Smart AI • Version 1</p>
+    </div>
+
+    <div class="chat" id="chat">
+
+        <div class="message bot">
+            <div class="bubble">
+                Hey! 👋 I'm Mr AI.
+
+                I'm still a small AI, but I'm learning. 😎
+
+                Try asking:
+                • Hello
+                • What can you do?
+                • Calculate 25 × 8
+                • Give me a study tip
+                • Tell me about HTML
+            </div>
+        </div>
+
+        <div class="typing" id="typing">
+            Mr AI is thinking...
+        </div>
+
+    </div>
+
+    <div class="input-area">
+        <input
+            type="text"
+            id="userInput"
+            placeholder="Ask me something..."
+            autocomplete="off"
+        >
+
+        <button id="sendBtn">Send</button>
+    </div>
+
+</div>
+
+
+<script>
+
+const input = document.getElementById("userInput");
+const sendBtn = document.getElementById("sendBtn");
+const chat = document.getElementById("chat");
+const typing = document.getElementById("typing");
+
+
+// -----------------------------
+// ADD MESSAGE TO CHAT
+// -----------------------------
+
+function addMessage(text, sender) {
+
+    const message = document.createElement("div");
+
+    message.className = "message " + sender;
+
+    const bubble = document.createElement("div");
+
+    bubble.className = "bubble";
+
+    bubble.textContent = text;
+
+    message.appendChild(bubble);
+
+    chat.insertBefore(message, typing);
+
+    chat.scrollTop = chat.scrollHeight;
+}
+
+
+// -----------------------------
+// SIMPLE CALCULATOR
+// -----------------------------
+
+function calculateMath(text) {
+
+    let expression = text
+        .replace(/what is/gi, "")
+        .replace(/calculate/gi, "")
+        .replace(/=/g, "")
+        .replace(/x/gi, "*")
+        .replace(/÷/g, "/")
+        .trim();
+
+    // Only allow basic mathematical characters
+    if (!/^[0-9+\-*/().%\s]+$/.test(expression)) {
+        return null;
+    }
+
+    try {
+
+        const answer = Function(
+            '"use strict"; return (' + expression + ')'
+        )();
+
+        if (typeof answer === "number" && isFinite(answer)) {
+            return answer;
+        }
+
+    } catch (error) {
+        return null;
+    }
+
+    return null;
+}
+
+
+// -----------------------------
+// AI BRAIN
+// -----------------------------
+
+function getAIResponse(userText) {
+
+    const text = userText.toLowerCase().trim();
+
+
+    // GREETING
+
+    if (
+        text.includes("hello") ||
+        text.includes("hi") ||
+        text.includes("hey")
+    ) {
+
+        const replies = [
+            "Hey! 👋 How can I help you?",
+            "Hello! 🤖 What's on your mind?",
+            "Hey there! Ready to build something? 🚀"
+        ];
+
+        return replies[Math.floor(Math.random() * replies.length)];
+    }
+
+
+    // NAME
+
+    if (
+        text.includes("your name") ||
+        text.includes("who are you")
+    ) {
+
+        return "I'm Mr AI 🤖 — made by 'Mr Creospire' — the first small version of our AI project.";
+    }
+
+
+    // CAPABILITIES
+
+    if (
+        text.includes("what can you do") ||
+        text.includes("what do you do")
+    ) {
+
+        return "Right now I can chat, understand some common questions, give study tips, explain basic topics, and perform basic calculations. 🧠";
+    }
+
+
+    // STUDY
+
+    if (
+        text.includes("study tip") ||
+        text.includes("how to study")
+    ) {
+
+        return "Try this: study for 25 minutes without distractions, then take a 5-minute break. After studying, explain the topic in your own words. 📚";
+    }
+
+
+    // HTML
+
+    if (text.includes("html")) {
+
+        return "HTML stands for HyperText Markup Language. It creates the structure of a webpage — like headings, buttons, forms and images. 🌐";
+    }
+
+
+    // JAVASCRIPT
+
+    if (
+        text.includes("javascript") ||
+        text.includes("java script")
+    ) {
+
+        return "JavaScript gives webpages logic and interactivity. Our AI's brain is currently being built with JavaScript. 🧠";
+    }
+
+
+    // CREOSPIRE
+
+    if (
+        text.includes("creospire") ||
+        text.includes("mr creospire")
+    ) {
+
+        return "Mr Creospire means Create + Inspire. 🚀";
+    }
+
+
+    // CALCULATION
+
+    const answer = calculateMath(text);
+
+    if (answer !== null) {
+
+        return "The answer is " + answer + " 🧮";
+    }
+
+
+    // THANK YOU
+
+    if (
+        text.includes("thank you") ||
+        text.includes("thanks")
+    ) {
+
+        return "You're welcome! 😎";
+    }
+
+
+    // BYE
+
+    if (
+        text === "bye" ||
+        text.includes("goodbye")
+    ) {
+
+        return "See you later! Keep creating. 🚀";
+    }
+
+
+    // DEFAULT RESPONSE
+
+    const defaultReplies = [
+
+        "Interesting... 🤔 I'm still learning how to understand that.",
+
+        "I don't fully understand that yet, but that's exactly what we'll improve in the next versions. 🧠",
+
+        "Hmm... my current brain doesn't know that yet. Try asking me something simpler.",
+
+        "That's outside my current knowledge. Version 1 is small — we'll make it much smarter. 🚀"
+
+    ];
+
+    return defaultReplies[
+        Math.floor(Math.random() * defaultReplies.length)
+    ];
+}
+
+
+// -----------------------------
+// SEND MESSAGE
+// -----------------------------
+
+function sendMessage() {
+
+    const text = input.value.trim();
+
+    if (text === "") {
+        return;
+    }
+
+
+    // User message
+
+    addMessage(text, "user");
+
+    input.value = "";
+
+    typing.style.display = "block";
+
+    chat.scrollTop = chat.scrollHeight;
+
+
+    // Small thinking delay
+
+    setTimeout(function() {
+
+        typing.style.display = "none";
+
+        const response = getAIResponse(text);
+
+        addMessage(response, "bot");
+
+    }, 600);
+}
+
+
+// Button
+
+sendBtn.addEventListener("click", sendMessage);
+
+
+// Enter key
+
+input.addEventListener("keydown", function(event) {
+
+    if (event.key === "Enter") {
+
+        sendMessage();
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>
